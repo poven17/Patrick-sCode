@@ -27,6 +27,8 @@ public class Robot extends IterativeRobot {
 	long start = System.currentTimeMillis() *3;
 	long end = System.currentTimeMillis()*3;
 	
+	int mode = 0;
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -86,7 +88,12 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		//Xbox controller Code
-		myDrive.arcadeDrive(driveStick.getRawAxis(1), -driveStick.getRawAxis(2), false);
+		if(mode % 2 == 0){
+			myDrive.arcadeDrive(driveStick.getRawAxis(1), -driveStick.getRawAxis(2), false);
+		}
+		if(mode % 2 == 1){
+			myDrive.arcadeDrive(driveStick.getRawAxis(1)/2, -driveStick.getRawAxis(2), false);
+		}
 		/**This is for a Joystick
 		 * if(driveStick.getRawAxis(2) > .5){
 			myDrive.arcadeDrive(driveStick.getRawAxis(1), -driveStick.getRawAxis(0));
@@ -96,6 +103,10 @@ public class Robot extends IterativeRobot {
 			start = System.currentTimeMillis();
 			end = System.currentTimeMillis() + 1650;
 		}
+		if(driveStick.getRawButton(4)){
+			mode++;
+		}
+		
 		if(driveStick.getRawButton(10)){
 			start = System.currentTimeMillis() *3;
 			end = System.currentTimeMillis()*3;

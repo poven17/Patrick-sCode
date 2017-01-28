@@ -24,6 +24,9 @@ public class Robot extends IterativeRobot {
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 
+	long start = System.currentTimeMillis() *3;
+	long end = System.currentTimeMillis()*3;
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -33,8 +36,11 @@ public class Robot extends IterativeRobot {
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
-		myDrive = new RobotDrive(1,2,3,4);
+		myDrive = new RobotDrive(3,1,6,2);
+		//This is for port 1
 		driveStick = new Joystick(0);
+		//This is for port 2
+		//driveStick = new Joystick(1);
 		
 		
 	}
@@ -79,7 +85,29 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		myDrive.arcadeDrive(driveStick, true );
+		//Xbox controller Code
+		myDrive.arcadeDrive(driveStick.getRawAxis(1), -driveStick.getRawAxis(2), false);
+		/**This is for a Joystick
+		 * if(driveStick.getRawAxis(2) > .5){
+			myDrive.arcadeDrive(driveStick.getRawAxis(1), -driveStick.getRawAxis(0));
+		}
+		*/
+		if(driveStick.getRawButton(1)){
+			start = System.currentTimeMillis();
+			end = System.currentTimeMillis() + 1650;
+		}
+		if(driveStick.getRawButton(10)){
+			start = System.currentTimeMillis() *3;
+			end = System.currentTimeMillis()*3;
+		}
+		if(start < end){
+			myDrive.arcadeDrive(0.25, 0.7);
+			System.out.println("Turning");
+			start = System.currentTimeMillis();
+		}
+		
+		
+		
 	}
 
 	/**

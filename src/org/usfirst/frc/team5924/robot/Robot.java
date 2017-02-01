@@ -23,11 +23,18 @@ public class Robot extends IterativeRobot {
 	RobotDrive myDrive;
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
-
-	long start = System.currentTimeMillis() *3;
-	long end = System.currentTimeMillis()*3;
+//No IMU
+	long start;
+	long end;
+//Yes IMU
+	double start1;
+	double end1;
 	
 	int mode = 0;
+	ADIS16448_IMU myIMU;
+
+	SmartDashboard dash;
+	
 	
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -43,27 +50,19 @@ public class Robot extends IterativeRobot {
 		driveStick = new Joystick(0);
 		//This is for port 2
 		//driveStick = new Joystick(1);
-		
-		
+		mode = 0;
+		myIMU = new ADIS16448_IMU(ADIS16448_IMU.Axis.kY, ADIS16448_IMU.AHRSAlgorithm.kComplementary);
+		myIMU.reset();
+		start = System.currentTimeMillis() *3;
+		end = System.currentTimeMillis() *3;
+		start1 = 0;
+		end1 = 0;
+		System.out.println("Version 1");
 	}
 
-	/**
-	 * This autonomous (along with the chooser code above) shows how to select
-	 * between different autonomous modes using the dashboard. The sendable
-	 * chooser code works with the Java SmartDashboard. If you prefer the
-	 * LabVIEW Dashboard, remove all of the chooser code and uncomment the
-	 * getString line to get the auto name from the text box below the Gyro
-	 *
-	 * You can add additional auto modes by adding additional comparisons to the
-	 * switch structure below with additional strings. If using the
-	 * SendableChooser make sure to add them to the chooser code above as well.
-	 */
 	@Override
 	public void autonomousInit() {
-		autoSelected = chooser.getSelected();
-		// autoSelected = SmartDashboard.getString("Auto Selector",
-		// defaultAuto);
-		System.out.println("Auto selected: " + autoSelected);
+		
 	}
 
 	/**
@@ -71,54 +70,72 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		switch (autoSelected) {
-		case customAuto:
-			// Put custom auto code here
-			break;
-		case defaultAuto:
-		default:
-			// Put default auto code here
-			break;
-		}
+		
 	}
 
+	@Override
+	public void teleopInit() {
+		myIMU.reset();
+		myIMU.calibrate();
+	}
+	
 	/**
 	 * This function is called periodically during operator control
 	 */
 	@Override
 	public void teleopPeriodic() {
-		//Xbox controller Code
-		if(mode % 2 == 0){
-			myDrive.arcadeDrive(driveStick.getRawAxis(1), -driveStick.getRawAxis(2), false);
-		}
-		if(mode % 2 == 1){
-			myDrive.arcadeDrive(driveStick.getRawAxis(1)/2, -driveStick.getRawAxis(2), false);
-		}
 		/**This is for a Joystick
 		 * if(driveStick.getRawAxis(2) > .5){
 			myDrive.arcadeDrive(driveStick.getRawAxis(1), -driveStick.getRawAxis(0));
 		}
 		*/
-		if(driveStick.getRawButton(1)){
-			start = System.currentTimeMillis();
-			end = System.currentTimeMillis() + 1650;
+		//Xbox controller Code
+		//Regular speed of robot.
+		if(mode % 2 == 0){
+			myDrive.arcadeDrive(driveStick.getRawAxis(1), -driveStick.getRawAxis(2), false);
 		}
+		//Half speed for Robot
 		if(driveStick.getRawButton(4)){
 			mode++;
 		}
-		
-		if(driveStick.getRawButton(10)){
-			start = System.currentTimeMillis() *3;
-			end = System.currentTimeMillis()*3;
+		if(mode % 2 == 1){
+		myDrive.arcadeDrive(driveStick.getRawAxis(1)/2, -driveStick.getRawAxis(2), false);
+		}
+		//this is to turn the robot around 180 (Not accurate)
+		if(driveStick.getRawButton(1)){
+			start = System.currentTimeMillis();
+			end = System.currentTimeMillis() + 1650;
 		}
 		if(start < end){
 			myDrive.arcadeDrive(0.25, 0.7);
 			System.out.println("Turning");
 			start = System.currentTimeMillis();
 		}
+		//This is a kill button for ^^^^^^
+		if(driveStick.getRawButton(10)){
+			start = System.currentTimeMillis() *3;
+			end = System.currentTimeMillis()*3;
+		}
+		//Turn 180 degrees using IMU
+		if(driveStick.getRawButton(2)){
+			start1 = myIMU.getYaw();
+			end1 = -myIMU.getYaw();
+		}
+			if(start1 < end1){
+			myDrive.arcadeDrive(0.25, 0.7);																																																																																																																																																																																																																														
+			System.out.println("Turning");
+			start1 = myIMU.getYaw();
+		}
+			
+			
+		dash.putData("IMU_DATA", myIMU);	
+			
+		dash.putNumber("val", myIMU.getAngle());
+			
+		dash.putNumber("Yaw Value", myIMU.getYaw());
+		dash.putNumber("angle", myIMU.getAngleX());
 		
-		
-		
+		System.out.println(myIMU.getAngle());
 	}
 
 	/**

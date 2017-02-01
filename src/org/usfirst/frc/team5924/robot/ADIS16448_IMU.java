@@ -308,7 +308,7 @@ public class ADIS16448_IMU extends GyroBase implements Gyro, PIDSource, LiveWind
    * Constructor assuming yaw axis is "Z" and Complementary AHRS algorithm.
    */
   public ADIS16448_IMU() {
-    this(Axis.kZ, AHRSAlgorithm.kComplementary);
+    this(Axis.kX, AHRSAlgorithm.kMadgwick);
   }
 
   /**
